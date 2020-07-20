@@ -1,5 +1,4 @@
 from typing import List
-from spacy.lang.en import English
 import de_core_news_sm
 from spacy.attrs import ORTH, NORM
 import spacy
@@ -9,22 +8,28 @@ from somajo import SoMaJo
 class SentenceHandler(object):
 
     def __init__(self, language=de_core_news_sm):
-        # self.nlp = language.load()
-        # self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'),before="parser")
-   
+
         german_missing_tokens = ['ca.','bzw.','Du','Dein','Deinen','-','Kl.']
 
+        # # Using Spacy module to tokeninze and split by sentences
+        # self.nlp = language.load()
+        # self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'),before="parser")
+
+        # # Handle the tokens that are recognized as end of a sentence but are just tokens added mannually or abbreviations
         # def set_custom_boundaries(doc):
         #     for i, token in enumerate(doc):
         #         if token.text in (german_missing_tokens):
         #             doc[i].is_sent_start = False
         #     return doc
-   
+
+        # # Implement changes from sentence boudry
         # self.nlp.add_pipe(set_custom_boundaries,before="parser")
 
+        # # Add the missing abbreviations to the vocabulary
         # for missing_token in german_missing_tokens:
         #     self.nlp.tokenizer.add_special_case(missing_token, [{ORTH:missing_token}])
         
+        # Initialize the german tokeinzer
         self.tokenizer = SoMaJo("de_CMC", split_camel_case=True)
 
 
@@ -37,9 +42,15 @@ class SentenceHandler(object):
         :param max_length: Max length that the sentences mus fall under
         :return: Returns a list of sentences.
         """
+        
+        # # Using Spacy sentencizer module
         # doc = self.nlp(body)
         # return [c.string.strip() for c in doc.sents if max_length > len(c.string.strip()) > min_length]
+
+        # Implementing SoMaJo tokenizer and sentencizer
         sentences = self.tokenizer.tokenize_text(body.splitlines())
+        
+        # Unwrapping and formatting result to return sentences
         sents = []
         for sentence in sentences:
             out = []
