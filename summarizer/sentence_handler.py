@@ -65,7 +65,7 @@ class SentenceHandler(object):
                 out = out[:-1]
             sents.append("".join(out))
 
-        return [c for c in sents if max_length > len(c) > min_length]
+        return [c for c in sents]# if max_length > len(c) > min_length]
 
 
     def __call__(self, body: str, min_length: int = 40, max_length: int = 600) -> List[str]:
