@@ -1,5 +1,5 @@
 from typing import List
-import de_core_news_sm
+import de_core:news_md
 from spacy.attrs import ORTH, NORM
 import spacy
 from somajo import SoMaJo
@@ -7,7 +7,7 @@ from pprint import pprint
 
 class SentenceHandler(object):
 
-    def __init__(self, language=de_core_news_sm):
+    def __init__(self, language=de_core:news_md):
 
         german_missing_tokens = ['ca.','bzw.','Du','Dein','Deinen','-','Kl.']
 
