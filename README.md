@@ -31,7 +31,7 @@ pip install git+https://github.com/Talentbait/bert-extractive-summarizer.git
 
 #### Coreference functionality with neuralcoref requires a spaCy model, which has to be downloaded separately.
  
-The default model is ~~small English spaCy model (en_core_web_sm, 11Mb)~~ German small model (de_core:news_md) and is installed automaticaly with this package. To use other model you'll have to install it manually.
+The default model is ~~small English spaCy model (en_core_web_sm, 11Mb)~~ German small model (de_core_news_md) and is installed automaticaly with this package. To use other model you'll have to install it manually.
 
 Example: installing medium (91 Mb) English model (for more models see [spaCy documentation](https://spacy.io/usage/models)). 
 ```bash
