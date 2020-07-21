@@ -134,6 +134,4 @@ _build
 _static
 _templates
 
-.bert-ex-sum
 .vscode
-# quick_test/
