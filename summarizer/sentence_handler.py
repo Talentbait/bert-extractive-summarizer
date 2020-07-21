@@ -1,5 +1,5 @@
 from typing import List
-import de_core_news_md
+import de_core_news_sm
 from spacy.attrs import ORTH, NORM
 import spacy
 from somajo import SoMaJo
@@ -7,7 +7,7 @@ from pprint import pprint
 
 class SentenceHandler(object):
 
-    def __init__(self, language=de_core_news_md):
+    def __init__(self, language=de_core_news_sm):
 
         german_missing_tokens = ['ca.','bzw.','Du','Dein','Deinen','-','Kl.']
 
@@ -22,8 +22,8 @@ class SentenceHandler(object):
                     doc[i].is_sent_start = False
             return doc
 
-        # # Implement changes from sentence boudry
-        # self.nlp.add_pipe(set_custom_boundaries,before="parser")
+        # Implement changes from sentence boudry
+        self.nlp.add_pipe(set_custom_boundaries,before="parser")
 
         # # Add the missing abbreviations to the vocabulary
         # for missing_token in german_missing_tokens:

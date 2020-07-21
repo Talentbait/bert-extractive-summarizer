@@ -72,12 +72,15 @@ class ModelProcessor(object):
         hidden = self.model(content, self.hidden, self.reduce_option)
         hidden_args = ClusterFeatures(hidden, algorithm, random_state=self.random_state).cluster(ratio)
 
-        if use_first:
-            if hidden_args[0] != 0:
-                hidden_args.insert(0,0)
-
-        sentences = [content[j] for j in hidden_args]
-        embeddings = np.asarray([hidden[j] for j in hidden_args])
+        # if use_first:
+        #     if hidden_args[0] != 0:
+        #         hidden_args.insert(0,0)
+        sentences = []
+        for j in hidden_args.values():
+            print(f"Lenght of sentences: {len(content)}")
+            print(f"Lenght of args: {len(j)}")
+            sentences.append([content[f] for f in j])
+        embeddings = np.asarray([hidden[j] for j in hidden_args[0]])
 
         return sentences, embeddings
 
@@ -137,7 +140,8 @@ class ModelProcessor(object):
         if sentences:
             sentences = self.__run_clusters(sentences, ratio, algorithm, use_first)
 
-        return ' '.join(sentences)
+        # return ' '.join(sentences)
+        return sentences
 
     def run_embeddings(
         self,
