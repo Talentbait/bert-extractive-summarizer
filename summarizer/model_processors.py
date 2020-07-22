@@ -6,8 +6,9 @@ from transformers import *
 from summarizer.bert_parent import BertParent
 from summarizer.cluster_features import ClusterFeatures
 from summarizer.sentence_handler import SentenceHandler
-import io
 
+import io
+import os
 
 class ModelProcessor(object):
 
@@ -39,7 +40,8 @@ class ModelProcessor(object):
         self.reduce_option = reduce_option
         self.sentence_handler = sentence_handler
         self.random_state = random_state
-        with io.open("teaser_sentences.txt") as input_file:
+        print(os.listdir())
+        with io.open("summarizer/teaser_sentences.txt") as input_file:
             self.base_examples = input_file.readlines()
 
     def process_content_sentences(self, body: str, min_length:int = 40, max_length: int = 600) -> List[str]:
