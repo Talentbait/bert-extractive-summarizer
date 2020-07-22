@@ -40,7 +40,7 @@ class ModelProcessor(object):
         self.reduce_option = reduce_option
         self.sentence_handler = sentence_handler
         self.random_state = random_state
-        print(os.listdir())
+        print(__file__)
         with io.open("summarizer/teaser_sentences.txt") as input_file:
             self.base_examples = input_file.readlines()
 
