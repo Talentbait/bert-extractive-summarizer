@@ -106,7 +106,7 @@ class ClusterFeatures(object):
         :return: Sentences index that qualify for summary
         """
 
-        k = 1 if ratio * len(self.features) < 1 else int(len(self.features) * ratio)
+        k = 1 if ratio * len(self.features) < 1 else int(len(self.features) * ratio) * 2
         model = self.__get_model(2).fit(self.base_features)
         centroids = self.__get_centroids(model)
         cluster_args = self.__find_closest_args(centroids,k)
