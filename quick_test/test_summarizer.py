@@ -22,7 +22,7 @@ class PythonPredictor:
         # print('We have added', added_tokens, 'tokens')
         # bertgerman_model.resize_token_embeddings(len(bertgerman_tokenizer) + len(german_missing_tokens))
 
-        model = Summarizer(custom_model=bertgerman_model, custom_tokenizer=bertgerman_tokenizer) if use_coreference else Summarizer(custom_model=bertgerman_model, custom_tokenizer=bertgerman_tokenizer, sentence_handler=handler)
+        model = Summarizer(custom_model=bertgerman_model, custom_tokenizer=bertgerman_tokenizer) if not use_coreference else Summarizer(custom_model=bertgerman_model, custom_tokenizer=bertgerman_tokenizer, sentence_handler=handler)
 
         self.model = model
 
