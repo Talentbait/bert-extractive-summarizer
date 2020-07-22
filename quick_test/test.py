@@ -56,6 +56,7 @@ selected_jobposting = st.sidebar.selectbox(
 )
 
 predictor = init_query_predict(greedy,use_coreference)
+
 @st.cache(hash_funcs={PythonPredictor: my_hash_func})
 def get_fixed_coref_en():
     coref_enabled = PythonPredictor(greediness=0.45, use_coreference=True)
@@ -79,13 +80,16 @@ output = predictor.predict(jobposting,use_first,max_length,ratio,min_length)
 st.subheader("Output")
 st.write(output)
 
+st.write(" ".join(output))
+
 st.header("Fixed examples")
 
 fixed_output = []
-fixed_output.append(coref_enabled.predict(jobposting,use_first=True))
-fixed_output.append(coref_enabled.predict(jobposting,use_first=False))
-fixed_output.append(coref_disabled.predict(jobposting,use_first=True))
-fixed_output.append(coref_disabled.predict(jobposting,use_first=False))
+
+fixed_output.append(" ".join(coref_enabled.predict(jobposting,use_first=True)))
+fixed_output.append(" ".join(coref_enabled.predict(jobposting,use_first=False)))
+fixed_output.append(" ".join(coref_disabled.predict(jobposting,use_first=True)))
+fixed_output.append(" ".join(coref_disabled.predict(jobposting,use_first=False)))
 
 st.text_area("Coreference Enabled   First sentence Enabled", fixed_output[0],height=180)
 st.text_area("Coreference Enabled   First sentence Disabled", fixed_output[1],height=180)
