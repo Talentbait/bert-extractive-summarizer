@@ -46,8 +46,8 @@ class SentenceHandler(object):
         # Using Spacy sentencizer module
         doc = self.nlp(body.replace("\r",""))
         spacy_sentences = [c.string.strip() for c in doc.sents if max_length > len(c.string.strip()) > min_length]
-        print("Spacy: " + str(len(spacy_sentences)))
-        pprint(spacy_sentences)
+        # print("Spacy: " + str(len(spacy_sentences)))
+        # pprint(spacy_sentences)
 
         # Implementing SoMaJo tokenizer and sentencizer
         sentences = self.tokenizer.tokenize_text(body.split("\r\n"))
@@ -68,9 +68,9 @@ class SentenceHandler(object):
             sents.append("".join(out))
 
         somajo_sentences = [c for c in sents if max_length > len(c) > min_length]
-        print("SoMaJo: " + str(len(somajo_sentences)))
-        pprint(somajo_sentences)
-        print("__________________________________________________________________________________________")
+        # print("SoMaJo: " + str(len(somajo_sentences)))
+        # pprint(somajo_sentences)
+        # print("__________________________________________________________________________________________")
         
         return somajo_sentences
 
