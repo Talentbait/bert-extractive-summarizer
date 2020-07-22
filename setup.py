@@ -15,5 +15,5 @@ setup(name='bert-extractive-summarizer',
       license='MIT',
       packages=find_packages(),
       package_data={'': ['teaser_sentences.txt']},
-      include_package_data=True,
+      include_package_data=False,
       zip_safe=False)
