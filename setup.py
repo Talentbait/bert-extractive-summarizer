@@ -14,4 +14,6 @@ setup(name='bert-extractive-summarizer',
       install_requires=['transformers', 'scikit-learn', 'spacy'],
       license='MIT',
       packages=find_packages(),
+      package_data={'': ['teaser_sentences.txt']},
+      include_package_data=True,
       zip_safe=False)
