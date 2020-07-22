@@ -6,6 +6,7 @@ from transformers import *
 from summarizer.bert_parent import BertParent
 from summarizer.cluster_features import ClusterFeatures
 from summarizer.sentence_handler import SentenceHandler
+import io
 
 
 class ModelProcessor(object):
@@ -38,6 +39,8 @@ class ModelProcessor(object):
         self.reduce_option = reduce_option
         self.sentence_handler = sentence_handler
         self.random_state = random_state
+        with io.open("summarizer/teaser_sentences.txt") as input_file:
+            self.base_examples = input_file.readlines()
 
     def process_content_sentences(self, body: str, min_length:int = 40, max_length: int = 600) -> List[str]:
         """
@@ -70,17 +73,26 @@ class ModelProcessor(object):
         """
 
         hidden = self.model(content, self.hidden, self.reduce_option)
-        hidden_args = ClusterFeatures(hidden, algorithm, random_state=self.random_state).cluster(ratio)
+        hidden_examples = self.model(self.base_examples, self.hidden, self.reduce_option)
+        hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(ratio)
 
         # if use_first:
         #     if hidden_args[0] != 0:
         #         hidden_args.insert(0,0)
         sentences = []
+        ordered_ids = []
         for j in hidden_args.values():
             print(f"Lenght of sentences: {len(content)}")
             print(f"Lenght of args: {len(j)}")
+            ordered_ids.extend(j[:2])
             sentences.append([content[f] for f in j])
         embeddings = np.asarray([hidden[j] for j in hidden_args[0]])
+
+        ordered_ids = list(dict.fromkeys(ordered_ids))
+        ordered_ids.sort()
+        print("Ordered ids: ", ordered_ids)
+        if ordered_ids:
+            sentences = [content[j] for j in ordered_ids if j]
 
         return sentences, embeddings
 
