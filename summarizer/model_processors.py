@@ -40,8 +40,8 @@ class ModelProcessor(object):
         self.reduce_option = reduce_option
         self.sentence_handler = sentence_handler
         self.random_state = random_state
-        print(__file__)
-        with io.open("summarizer/teaser_sentences.txt") as input_file:
+        base_path = os.path.dirname(__file__)
+        with io.open(base_path + "/teaser_sentences.txt") as input_file:
             self.base_examples = input_file.readlines()
 
     def process_content_sentences(self, body: str, min_length:int = 40, max_length: int = 600) -> List[str]:
