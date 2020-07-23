@@ -44,10 +44,11 @@ st.sidebar.subheader("Settings")
 algorithm = st.sidebar.selectbox("Choose algroithm",['kmeans','gmm'],0)
 use_coreference = st.sidebar.checkbox("Use Coreference handler",False)
 greedy = st.sidebar.slider("Greedines",0.0,1.0,0.45,0.05)
-use_first = st.sidebar.checkbox("Use first sentence",False)
+use_first = st.sidebar.checkbox("Use first sentence",True)
 min_length = st.sidebar.slider("Sentence min length",0,100,40,5)
 max_length = st.sidebar.slider("Sentence max length",20,500,500,10)
 ratio = st.sidebar.slider("Summarizer ratio",0.1,1.0,0.2,0.05)
+clusters = st.sidebar.slider("Clusters to use",1,6,2,1)
 
 selected_jobposting = st.sidebar.selectbox(
     label = "Select a sample jobposting",
@@ -67,8 +68,6 @@ def get_fixed_coref_dis():
     coref_disabled = PythonPredictor(greediness=0.45, use_coreference=False)
     return coref_disabled
 
-coref_enabled = get_fixed_coref_en()
-coref_disabled = get_fixed_coref_dis()
 
 st.subheader("Input")
 
@@ -76,25 +75,28 @@ jobposting = st.text_area("Text to summarize",(sample_texts[selected_jobposting]
 
 # jobposting = preprocess_jobposting(jobposting)
 
-output = predictor.predict(jobposting,use_first,max_length,ratio,min_length)
+output = predictor.predict(body=jobposting, use_first=use_first, max_length=max_length, ratio=ratio, min_length=min_length, algorithm=algorithm, clusters=clusters)
 st.subheader("Output")
 st.write(output)
 
 st.write(" ".join(output))
 
-st.header("Fixed examples")
+# st.header("Fixed examples")
 
-fixed_output = []
+# fixed_output = []
 
-fixed_output.append(" ".join(coref_enabled.predict(jobposting,use_first=True)))
-fixed_output.append(" ".join(coref_enabled.predict(jobposting,use_first=False)))
-fixed_output.append(" ".join(coref_disabled.predict(jobposting,use_first=True)))
-fixed_output.append(" ".join(coref_disabled.predict(jobposting,use_first=False)))
+# coref_enabled = get_fixed_coref_en()
+# coref_disabled = get_fixed_coref_dis()
 
-st.text_area("Coreference Enabled   First sentence Enabled", fixed_output[0],height=180)
-st.text_area("Coreference Enabled   First sentence Disabled", fixed_output[1],height=180)
-st.text_area("Coreference Disabled  First sentence Enabled", fixed_output[2],height=180)
-st.text_area("Coreference Disabled  First sentence Disabled", fixed_output[3],height=180)
+# fixed_output.append(" ".join(coref_enabled.predict(jobposting,use_first=True)))
+# fixed_output.append(" ".join(coref_enabled.predict(jobposting,use_first=False)))
+# fixed_output.append(" ".join(coref_disabled.predict(jobposting,use_first=True)))
+# fixed_output.append(" ".join(coref_disabled.predict(jobposting,use_first=False)))
+
+# st.text_area("Coreference Enabled   First sentence Enabled", fixed_output[0],height=180)
+# st.text_area("Coreference Enabled   First sentence Disabled", fixed_output[1],height=180)
+# st.text_area("Coreference Disabled  First sentence Enabled", fixed_output[2],height=180)
+# st.text_area("Coreference Disabled  First sentence Disabled", fixed_output[3],height=180)
 
 
 

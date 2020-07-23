@@ -92,26 +92,28 @@ class ClusterFeatures(object):
                 #     centroid_min = value
 
             # used_idx.append(cur_arg)
-            args[j] = np.argsort(scored_ids)
-            used_idx.extend(args[j][:k])
+            args[j] = np.argsort(scored_ids)[:k]
+            used_idx.extend(args[j])
             centroid_min = 1e10
             cur_arg = -1
             
         return args
 
-    def cluster(self, ratio: float = 0.1) -> List[int]:
+    def cluster(self, ratio: float = 0.1, clusters: int = 2) -> List[int]:
         """
         Clusters sentences based on the ratio
-        :param ratio: Ratio to use for clustering
+        :param ratio: Ratio to use for sentence selection
+        :param clusters: Clusters to use from base examples
         :return: Sentences index that qualify for summary
         """
+        ratio = ratio/clusters
 
-        k = 1 if ratio * len(self.features) < 1 else int(len(self.features) * ratio) * 2
-        model = self.__get_model(2).fit(self.base_features)
+        k = 1 if ratio * len(self.features) < 1 else int(len(self.features) * ratio)
+        model = self.__get_model(clusters).fit(self.base_features)
         centroids = self.__get_centroids(model)
         cluster_args = self.__find_closest_args(centroids,k)
         # sorted_values = sorted(cluster_args.values())
         return cluster_args
 
-    def __call__(self, ratio: float = 0.1) -> List[int]:
-        return self.cluster(ratio)
+    def __call__(self, ratio: float = 0.1, clusters: int = 2) -> List[int]:
+        return self.cluster(ratio,clusters)

@@ -7,8 +7,8 @@ class PythonPredictor:
     def __init__(self,greediness=0.4, use_coreference=False):
         handler = CoreferenceHandler(greedyness=greediness,spacy_model="de_core_news_sm")
 
-        bertgerman_model = BertModel.from_pretrained('bert-base-multilingual-cased', output_hidden_states=True)
-        bertgerman_tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
+        bertgerman_model = BertModel.from_pretrained('bert-base-german-cased', output_hidden_states=True)
+        bertgerman_tokenizer = BertTokenizer.from_pretrained('bert-base-german-cased')
 
         german_missing_tokens = ['ca.','bzw.','Du','Dein','Deinen','-','Kl.']
 
@@ -26,7 +26,7 @@ class PythonPredictor:
 
         self.model = model
 
-    def predict(self,body,use_first=True,max_length=500,ratio=0.15, min_length=25,algorithm='kmeans'):
+    def predict(self,body,use_first=True,max_length=500,ratio=0.15, min_length=25,algorithm='kmeans',clusters=2):
 
-        output = self.model(body,ratio=ratio, min_length=min_length, max_length=max_length, use_first=use_first,algorithm=algorithm)
+        output = self.model(body, ratio=ratio, min_length=min_length, max_length=max_length, use_first=use_first, algorithm=algorithm, clusters=clusters)
         return output

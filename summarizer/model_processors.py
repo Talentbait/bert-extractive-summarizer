@@ -62,70 +62,87 @@ class ModelProcessor(object):
             content: List[str],
             ratio: float = 0.2,
             algorithm: str = 'kmeans',
-            use_first: bool = True
+            use_first: bool = True,
+            clusters: int = 2
     ) -> Tuple[List[str], np.ndarray]:
         """
         Runs the cluster algorithm based on the hidden state. Returns both the embeddings and sentences.
 
         :param content: Content list of sentences.
-        :param ratio: The ratio to use for clustering.
+        :param ratio: Ratio to use for sentence selection
         :param algorithm: Type of algorithm to use for clustering.
         :param use_first: Whether to use first sentence (helpful for news stories, etc).
+        :param clusters: Clusters to use from base examples
         :return: A tuple of summarized sentences and embeddings
         """
 
         hidden = self.model(content, self.hidden, self.reduce_option)
         hidden_examples = self.model(self.base_examples, self.hidden, self.reduce_option)
-        hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(ratio)
+        hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(ratio,clusters)
+
+        # print("K ROIO ")
+
+        # with io.open("sentence_vectors.tsv","w") as vectors, io.open("sentence_labels.tsv","w") as labels:
+        #     vectors.write(str(hidden.shape) + "\n")
+        #     for sentence_id, vector in enumerate(hidden):
+        #         labels.write(content[sentence_id] + "\n")
+        #         vectors.write("\t".join([str(dim) for dim in vector]) + "\n")
 
         # if use_first:
         #     if hidden_args[0] != 0:
         #         hidden_args.insert(0,0)
+
         sentences = []
         ordered_ids = []
         for j in hidden_args.values():
-            print(f"Lenght of sentences: {len(content)}")
-            print(f"Lenght of args: {len(j)}")
-            ordered_ids.extend(j[:2])
+            ordered_ids.extend(j)
             sentences.append([content[f] for f in j])
         embeddings = np.asarray([hidden[j] for j in hidden_args[0]])
 
         ordered_ids = list(dict.fromkeys(ordered_ids))
         ordered_ids.sort()
-        print("Ordered ids: ", ordered_ids)
+        print("Ordered ids before: ", ordered_ids)
+
+        if not use_first:
+            ordered_ids.pop(0)
+            print("Ordered ids after:  ", ordered_ids)
+        
         if ordered_ids:
-            sentences = [content[j] for j in ordered_ids if j]
+            print("Ordered ids final:  ", ordered_ids)
+            sentences = [content[j] for j in ordered_ids]
 
         return sentences, embeddings
 
-    def __run_clusters(self, content: List[str], ratio=0.2, algorithm='kmeans', use_first: bool= True) -> List[str]:
+    def __run_clusters(self, content: List[str], ratio=0.2, algorithm='kmeans', use_first: bool= True,clusters: int = 2) -> List[str]:
         """
         Runs clusters and returns sentences.
 
         :param content: The content of sentences.
-        :param ratio: Ratio to use for for clustering.
+        :param ratio: Ratio to use for sentence selection
         :param algorithm: Algorithm selection for clustering.
         :param use_first: Whether to use first sentence
+        :param clusters: Clusters to use from base examples
         :return: summarized sentences
         """
 
-        sentences, _ = self.cluster_runner(content, ratio, algorithm, use_first)
+        sentences, _ = self.cluster_runner(content, ratio, algorithm, use_first, clusters)
         return sentences
 
     def __retrieve_summarized_embeddings(
-            self, content: List[str], ratio=0.2, algorithm='kmeans', use_first: bool= True
+            self, content: List[str], ratio=0.2, algorithm='kmeans', use_first: bool= True, clusters: int = 2
     ) -> np.ndarray:
         """
         Retrieves embeddings of the summarized sentences.
 
         :param content: The content of sentences.
-        :param ratio: Ratio to use for for clustering.
+        :param ratio: Ratio to use for sentence selection
         :param algorithm: Algorithm selection for clustering.
         :param use_first: Whether to use first sentence
+        :param clusters: Clusters to use from base examples
         :return: Summarized embeddings
         """
 
-        _, embeddings = self.cluster_runner(content, ratio, algorithm, use_first)
+        _, embeddings = self.cluster_runner(content, ratio, algorithm, use_first, clusters)
         return embeddings
 
     def run(
@@ -135,24 +152,26 @@ class ModelProcessor(object):
         min_length: int = 40,
         max_length: int = 600,
         use_first: bool = True,
-        algorithm: str ='kmeans'
+        algorithm: str ='kmeans',
+        clusters: int = 2
     ) -> str:
         """
         Preprocesses the sentences, runs the clusters to find the centroids, then combines the sentences.
 
         :param body: The raw string body to process
-        :param ratio: Ratio of sentences to use
+        :param ratio: Ratio to use for sentence selection
         :param min_length: Minimum length of sentence candidates to utilize for the summary.
         :param max_length: Maximum length of sentence candidates to utilize for the summary
         :param use_first: Whether or not to use the first sentence
         :param algorithm: Which clustering algorithm to use. (kmeans, gmm)
+        :param clusters: Clusters to use from base examples
         :return: A summary sentence
         """
 
         sentences = self.sentence_handler(body, min_length, max_length)
 
         if sentences:
-            sentences = self.__run_clusters(sentences, ratio, algorithm, use_first)
+            sentences = self.__run_clusters(sentences, ratio, algorithm, use_first, clusters)
 
         # return ' '.join(sentences)
         return sentences
@@ -164,7 +183,8 @@ class ModelProcessor(object):
         min_length: int = 40,
         max_length: int = 600,
         use_first: bool = True,
-        algorithm: str ='kmeans'
+        algorithm: str ='kmeans',
+        clusters: int = 2
     ) -> Optional[np.ndarray]:
         """
         Preprocesses the sentences, runs the clusters to find the centroids, then combines the embeddings.
@@ -175,13 +195,14 @@ class ModelProcessor(object):
         :param max_length: Maximum length of sentence candidates to utilize for the summary
         :param use_first: Whether or not to use the first sentence
         :param algorithm: Which clustering algorithm to use. (kmeans, gmm)
+        :param clusters: Clusters to use from base examples
         :return: A summary embedding
         """
 
         sentences = self.sentence_handler(body, min_length, max_length)
 
         if sentences:
-            embeddings = self.__retrieve_summarized_embeddings(sentences, ratio, algorithm, use_first)
+            embeddings = self.__retrieve_summarized_embeddings(sentences, ratio, algorithm, use_first, clusters)
             return embeddings
 
         return None
@@ -193,7 +214,8 @@ class ModelProcessor(object):
         min_length: int = 40,
         max_length: int = 600,
         use_first: bool = True,
-        algorithm: str = 'kmeans'
+        algorithm: str = 'kmeans',
+        clusters: int = 2
     ) -> str:
         """
         (utility that wraps around the run function)
@@ -206,10 +228,11 @@ class ModelProcessor(object):
         :param max_length: Maximum length of sentence candidates to utilize for the summary
         :param use_first: Whether or not to use the first sentence
         :param algorithm: Which clustering algorithm to use. (kmeans, gmm)
+        :param clusters: Clusters to use from base examples
         :return: A summary sentence
         """
 
-        return self.run(body, ratio, min_length, max_length, algorithm=algorithm, use_first=use_first)
+        return self.run(body, ratio, min_length, max_length, algorithm=algorithm, use_first=use_first, clusters=clusters)
 
 
 
