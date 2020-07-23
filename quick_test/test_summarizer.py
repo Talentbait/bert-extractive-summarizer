@@ -10,7 +10,7 @@ class PythonPredictor:
         bertgerman_model = BertModel.from_pretrained('bert-base-german-cased', output_hidden_states=True)
         bertgerman_tokenizer = BertTokenizer.from_pretrained('bert-base-german-cased')
 
-        german_missing_tokens = ['ca.','bzw.','Du','Dein','Deinen','-','Kl.']
+        # german_missing_tokens = ['ca.','bzw.','Du','Dein','Deinen','-','Kl.']
 
         # bertgerman_model = BertModel.from_pretrained('bert-base-german-cased', output_hidden_states=True,)
         # bertgerman_tokenizer = BertTokenizer.from_pretrained('bert-base-german-cased',never_split=german_missing_tokens,do_basic_tokenize=True)
@@ -26,7 +26,7 @@ class PythonPredictor:
 
         self.model = model
 
-    def predict(self,body,use_first=True,max_length=500,ratio=0.15, min_length=25,algorithm='kmeans',clusters=2):
+    def predict(self,body,use_first=True,max_length=500,nr_sentences=4, min_length=25,algorithm='kmeans',clusters=2):
 
-        output = self.model(body, ratio=ratio, min_length=min_length, max_length=max_length, use_first=use_first, algorithm=algorithm, clusters=clusters)
+        output = self.model(body, nr_sentences=nr_sentences, min_length=min_length, max_length=max_length, use_first=use_first, algorithm=algorithm, clusters=clusters)
         return output

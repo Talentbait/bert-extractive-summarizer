@@ -51,18 +51,18 @@ def passage():
 
 
 def test_summary_creation(summarizer, passage):
-    res = summarizer(passage, ratio=0.15, min_length=25, max_length=500)
+    res = summarizer(passage, nr_sentences=4, min_length=25, max_length=500)
     assert len(res) > 10
 
 
 def test_summary_embeddings(summarizer, passage):
-    embeddings = summarizer.run_embeddings(passage, ratio=0.15, min_length=25, max_length=500)
+    embeddings = summarizer.run_embeddings(passage, nr_sentences=4, min_length=25, max_length=500)
     assert embeddings.shape[1] == 768
     assert embeddings.shape[0] > 1
 
 
-def test_summary_larger_ratio(summarizer, passage):
-    res = summarizer(passage, ratio=0.5)
+def test_summary_more_sentences(summarizer, passage):
+    res = summarizer(passage, nr_sentences=8)
     assert len(res) > 10
 
 
@@ -72,7 +72,7 @@ def test_cluster_algorithm(summarizer, passage):
 
 
 def test_do_not_use_first(summarizer, passage):
-    res = summarizer(passage, ratio=0.1, use_first=False)
+    res = summarizer(passage, nr_sentences=4, use_first=False)
     assert res is not None
 
 

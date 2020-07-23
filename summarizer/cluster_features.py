@@ -72,8 +72,16 @@ class ClusterFeatures(object):
         :return: Closest arguments
         """
 
-        centroid_min = 1e10
-        cur_arg = -1
+        sentences_per_cluster = [int(k/len(centroids))]*len(centroids)
+        idx = 0
+        if k - sum(sentences_per_cluster) > len(sentences_per_cluster):
+            sentences_per_cluster = [a+1 for a in sentences_per_cluster]
+        while k - sum(sentences_per_cluster) > 0:
+            sentences_per_cluster[idx] += 1
+            idx += 1
+
+        print(sentences_per_cluster)
+        
         args = {}
         used_idx = []
 
@@ -83,37 +91,37 @@ class ClusterFeatures(object):
 
             for i, feature in enumerate(self.features):
                 value = np.linalg.norm(feature - centroid)
-
-                if i not in used_idx:
-                    scored_ids.append(value)
-
-                # if value < centroid_min and i not in used_idx:
-                #     cur_arg = i
-                #     centroid_min = value
-
-            # used_idx.append(cur_arg)
-            args[j] = np.argsort(scored_ids)[:k]
-            used_idx.extend(args[j])
-            centroid_min = 1e10
-            cur_arg = -1
+                if i in used_idx:
+                    value = 100000000
+                    pass
+                scored_ids.append(value)
             
+            args[j] = np.argsort(scored_ids)[:sentences_per_cluster[j]]
+            print(f"Cluster {j}:")
+            for i in range(len(args[j])):
+                print(f"Sentence {args[j][i] + 1}:\t{np.sort(scored_ids)[i]}")
+            used_idx.extend(args[j])
+            # print(used_idx)
+
+        # print(args)
         return args
 
-    def cluster(self, ratio: float = 0.1, clusters: int = 2) -> List[int]:
+    def cluster(self, nr_sentences: int = 4, clusters: int = 2) -> List[int]:
         """
-        Clusters sentences based on the ratio
-        :param ratio: Ratio to use for sentence selection
+        Clusters sentences
+        :param nr_sentences: Sentences to output at summary
         :param clusters: Clusters to use from base examples
         :return: Sentences index that qualify for summary
         """
-        ratio = ratio/clusters
+        # new_ratio = ratio/clusters
+        # k = 1 if new_ratio * len(self.features) < 1 else int(len(self.features) * new_ratio)
+        # print(f"Defined ratio:\t{ratio} ({k * clusters} sentence{'s' if k > 1 else ''})")
 
-        k = 1 if ratio * len(self.features) < 1 else int(len(self.features) * ratio)
         model = self.__get_model(clusters).fit(self.base_features)
         centroids = self.__get_centroids(model)
-        cluster_args = self.__find_closest_args(centroids,k)
+        cluster_args = self.__find_closest_args(centroids,nr_sentences)
         # sorted_values = sorted(cluster_args.values())
         return cluster_args
 
-    def __call__(self, ratio: float = 0.1, clusters: int = 2) -> List[int]:
-        return self.cluster(ratio,clusters)
+    def __call__(self, nr_sentences: int = 4, clusters: int = 2) -> List[int]:
+        return self.cluster(nr_sentences,clusters)

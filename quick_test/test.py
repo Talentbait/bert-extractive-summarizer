@@ -17,8 +17,12 @@ def preprocess_jobposting(contnent: str) -> str:
     """
 
     # Add missing dot to handle large blocs with bullet point text
-    contnent = re.sub(r"\n{2,}",".",contnent)
-    contnent = re.sub(r"^\... ",".",contnent)
+    contnent = re.sub(r"\s+\*\s+","\n",contnent)
+    contnent = re.sub(r"\s\n\s+","\n",contnent)
+    contnent = re.sub(r"als(\.\.\.)*\s+","als ",contnent)
+    contnent = re.sub(r"\.*\s*\n+",".\n\n",contnent)
+    for punctuation in [r"\.",r":",r"\?",r"!"]:
+        contnent = re.sub(punctuation + r"\.",punctuation,contnent)
 
     return contnent
 
@@ -47,7 +51,7 @@ greedy = st.sidebar.slider("Greedines",0.0,1.0,0.45,0.05)
 use_first = st.sidebar.checkbox("Use first sentence",True)
 min_length = st.sidebar.slider("Sentence min length",0,100,40,5)
 max_length = st.sidebar.slider("Sentence max length",20,500,500,10)
-ratio = st.sidebar.slider("Summarizer ratio",0.1,1.0,0.2,0.05)
+nr_sentences = st.sidebar.slider("Output sentences",1,16,4,1)
 clusters = st.sidebar.slider("Clusters to use",1,6,2,1)
 
 selected_jobposting = st.sidebar.selectbox(
@@ -71,11 +75,12 @@ def get_fixed_coref_dis():
 
 st.subheader("Input")
 
-jobposting = st.text_area("Text to summarize",(sample_texts[selected_jobposting]),height=500)
+# st.text_area("Text to summarize",(sample_texts[selected_jobposting]),height=500)
+jobposting = st.text_area("Text to summarize",preprocess_jobposting(sample_texts[selected_jobposting]),height=500)
 
 # jobposting = preprocess_jobposting(jobposting)
 
-output = predictor.predict(body=jobposting, use_first=use_first, max_length=max_length, ratio=ratio, min_length=min_length, algorithm=algorithm, clusters=clusters)
+output = predictor.predict(body=jobposting, use_first=use_first, max_length=max_length, nr_sentences=nr_sentences, min_length=min_length, algorithm=algorithm, clusters=clusters)
 st.subheader("Output")
 st.write(output)
 
@@ -125,27 +130,23 @@ def filter_sentences_by_length(sentences: List[str], max_length: int = 500, min_
     used = [a['sentence'] for a in sentence_described if a['used']]
     not_used = [a['sentence'] for a in sentence_described if not a['used']]
 
+    st.write("Used:")
+    st.json(used)
+    st.write("Dropped:")
+    st.json(not_used)
+
     return used, not_used
 
-st.subheader("Using Spacy de_core_news_sm")
-nlp = spacy.load("de_core_news_sm")
-spacy_sentences = [sent.text for sent in nlp(jobposting).sents]
-
-spacy_used, spacy_not_used = filter_sentences_by_length(spacy_sentences,max_length,min_length)
-st.write("Used:")
-st.json(spacy_used)
-st.write("Dropped:")
-st.json(spacy_not_used)
 
 st.subheader("Using SooMaJo sentence splitter")
 sen_handler = SentenceHandler()
 somajo_sentences = sen_handler(jobposting, min_length=0, max_length=10000)
+filter_sentences_by_length(somajo_sentences,max_length,min_length)
 
-somajo_used, somajo_not_used = filter_sentences_by_length(somajo_sentences,max_length,min_length)
-st.write("Used:")
-st.json(somajo_used)
-st.write("Dropped:")
-st.json(somajo_not_used)
+st.subheader("Using Spacy de_core_news_sm")
+nlp = spacy.load("de_core_news_sm")
+spacy_sentences = [sent.text for sent in nlp(jobposting).sents]
+spacy_used, spacy_not_used = filter_sentences_by_length(spacy_sentences,max_length,min_length)
 
 st.header("Another summarizer")
 
