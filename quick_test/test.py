@@ -22,8 +22,8 @@ def preprocess_jobposting(contnent: str) -> str:
     contnent = re.sub(r"als(\.\.\.)*\s+","als ",contnent)
     contnent = re.sub(r"\.*\s*\n+",".\n\n",contnent)
     for punctuation in [r"\.",r":",r"\?",r"!"]:
-        contnent = contnent.replace(punctuation + ".", punctuation
-
+        contnent = contnent.replace(punctuation + ".", punctuation)
+        
     return contnent
 
 # Load the jobpostings to show as default examples for testing
