@@ -80,18 +80,6 @@ class ModelProcessor(object):
         hidden_examples = self.model(self.base_examples, self.hidden, self.reduce_option)
         hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(nr_sentences,clusters)
 
-        # print("K ROIO ")
-
-        # with io.open("sentence_vectors.tsv","w") as vectors, io.open("sentence_labels.tsv","w") as labels:
-        #     vectors.write(str(hidden.shape) + "\n")
-        #     for sentence_id, vector in enumerate(hidden):
-        #         labels.write(content[sentence_id] + "\n")
-        #         vectors.write("\t".join([str(dim) for dim in vector]) + "\n")
-
-        # if use_first:
-        #     if hidden_args[0] != 0:
-        #         hidden_args.insert(0,0)
-
         sentences = []
         ordered_ids = []
         for j in hidden_args.values():

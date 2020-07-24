@@ -1,3 +1,4 @@
+from summa.summarizer import summarize
 from transformers import BertModel, BertTokenizer, DistilBertModel, DistilBertTokenizer
 import streamlit as st
 from test_summarizer import PythonPredictor
@@ -150,5 +151,4 @@ spacy_used, spacy_not_used = filter_sentences_by_length(spacy_sentences,max_leng
 
 st.header("Another summarizer")
 
-from summa.summarizer import summarize
 st.write(summarize(jobposting, language='german',ratio=0.20))
