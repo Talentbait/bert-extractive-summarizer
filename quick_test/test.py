@@ -22,14 +22,14 @@ def preprocess_jobposting(contnent: str) -> str:
     contnent = re.sub(r"als(\.\.\.)*\s+","als ",contnent)
     contnent = re.sub(r"\.*\s*\n+",".\n\n",contnent)
     for punctuation in [r"\.",r":",r"\?",r"!"]:
-        contnent = re.sub(punctuation + r"\.",punctuation,contnent)
+        contnent = contnent.replace(punctuation + ".", punctuation
 
     return contnent
 
 # Load the jobpostings to show as default examples for testing
 @st.cache()
 def get_sample_texts():
-    with io.open("QUICK_TEST/sample_texts.json") as json_file:
+    with io.open("quick_test/sample_texts.json") as json_file:
         sample_texts = json.load(json_file)
     return sample_texts
 
