@@ -5,6 +5,7 @@ from transformers import *
 
 from summarizer.bert_parent import BertParent
 from summarizer.cluster_features import ClusterFeatures
+from summarizer.cluster_features_original import ClusterFeaturesOriginal
 from summarizer.sentence_handler import SentenceHandler
 
 import io
@@ -20,7 +21,8 @@ class ModelProcessor(object):
         hidden: int = -2,
         reduce_option: str = 'mean',
         sentence_handler: SentenceHandler = SentenceHandler(),
-        random_state: int = 12345
+        random_state: int = 12345,
+        use_original: bool = False
     ):
         """
         This is the parent Bert Summarizer model. New methods should implement this class
@@ -63,7 +65,8 @@ class ModelProcessor(object):
             nr_sentences: int = 4,
             algorithm: str = 'kmeans',
             use_first: bool = True,
-            clusters: int = 2
+            clusters: int = 2,
+            use_original: bool = False
     ) -> Tuple[List[str], np.ndarray]:
         """
         Runs the cluster algorithm based on the hidden state. Returns both the embeddings and sentences.
@@ -73,34 +76,52 @@ class ModelProcessor(object):
         :param algorithm: Type of algorithm to use for clustering.
         :param use_first: Whether to use first sentence (helpful for news stories, etc).
         :param clusters: Clusters to use from base examples
+        :param use_original: Wether or not to use the original clustering approach
         :return: A tuple of summarized sentences and embeddings
         """
 
         hidden = self.model(content, self.hidden, self.reduce_option)
+
+        if use_original:
+            print("Using original summarazier clustering")
+            hidden_args = ClusterFeaturesOriginal(hidden, algorithm, random_state=self.random_state).cluster(nr_sentences)
+            
+            if use_first:
+                if hidden_args[0] != 0:
+                    hidden_args.insert(0,0)
+
+            sentences = [content[j] for j in hidden_args]
+            embeddings = np.asarray([hidden[j] for j in hidden_args])
+
+            return sentences, embeddings
+
+        print("Using modified summarazier clustering")
         hidden_examples = self.model(self.base_examples, self.hidden, self.reduce_option)
-        hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(nr_sentences,clusters)
+        hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(nr_sentences + 1,clusters)
 
         sentences = []
         ordered_ids = []
         for j in hidden_args.values():
             ordered_ids.extend(j)
             sentences.append([content[f] for f in j])
-        embeddings = np.asarray([hidden[j] for j in hidden_args[0]])
 
         ordered_ids = list(dict.fromkeys(ordered_ids))
         ordered_ids.sort()
 
+        print("ORdered IDs:\t", ordered_ids)
+
         if not use_first:
             ordered_ids.pop(0)
+            print("Pop:\t", ordered_ids)
         
         if ordered_ids:
             sentences = [content[j] for j in ordered_ids]
-
-        # print(f"Real ratio:\t{round(len(ordered_ids)/len(content),2)} ({len(ordered_ids)} sentence{'s' if len(ordered_ids) > 1 else ''})")
+        
+        embeddings = np.asarray([hidden[j] for j in ordered_ids])
 
         return sentences, embeddings
 
-    def __run_clusters(self, content: List[str], nr_sentences=4, algorithm='kmeans', use_first: bool= True,clusters: int = 2) -> List[str]:
+    def __run_clusters(self, content: List[str], nr_sentences=4, algorithm='kmeans', use_first: bool= True,clusters: int = 2, use_original: bool = False) -> List[str]:
         """
         Runs clusters and returns sentences.
 
@@ -109,10 +130,11 @@ class ModelProcessor(object):
         :param algorithm: Algorithm selection for clustering.
         :param use_first: Whether to use first sentence
         :param clusters: Clusters to use from base examples
+        :param use_original: Wether or not to use the original clustering approach
         :return: summarized sentences
         """
 
-        sentences, _ = self.cluster_runner(content, nr_sentences, algorithm, use_first, clusters)
+        sentences, _ = self.cluster_runner(content, nr_sentences, algorithm, use_first, clusters, use_original)
         return sentences
 
     def __retrieve_summarized_embeddings(
@@ -140,7 +162,8 @@ class ModelProcessor(object):
         max_length: int = 600,
         use_first: bool = True,
         algorithm: str ='kmeans',
-        clusters: int = 2
+        clusters: int = 2,
+        use_original: bool = False
     ) -> str:
         """
         Preprocesses the sentences, runs the clusters to find the centroids, then combines the sentences.
@@ -152,13 +175,14 @@ class ModelProcessor(object):
         :param use_first: Whether or not to use the first sentence
         :param algorithm: Which clustering algorithm to use. (kmeans, gmm)
         :param clusters: Clusters to use from base examples
+        :param use_original: Wether or not to use the original clustering approach
         :return: A summary sentence
         """
 
         sentences = self.sentence_handler(body, min_length, max_length)
 
         if sentences:
-            sentences = self.__run_clusters(sentences, nr_sentences, algorithm, use_first, clusters)
+            sentences = self.__run_clusters(sentences, nr_sentences, algorithm, use_first, clusters, use_original)
 
         # return ' '.join(sentences)
         return sentences
@@ -202,7 +226,8 @@ class ModelProcessor(object):
         max_length: int = 600,
         use_first: bool = True,
         algorithm: str = 'kmeans',
-        clusters: int = 2
+        clusters: int = 2,
+        use_original: bool = False
     ) -> str:
         """
         (utility that wraps around the run function)
@@ -216,10 +241,11 @@ class ModelProcessor(object):
         :param use_first: Whether or not to use the first sentence
         :param algorithm: Which clustering algorithm to use. (kmeans, gmm)
         :param clusters: Clusters to use from base examples
+        :param use_original: Wether or not to use the original clustering approach
         :return: A summary sentence
         """
 
-        return self.run(body, nr_sentences, min_length, max_length, algorithm=algorithm, use_first=use_first, clusters=clusters)
+        return self.run(body, nr_sentences, min_length, max_length, algorithm=algorithm, use_first=use_first, clusters=clusters,use_original=use_original)
 
 
 
@@ -233,7 +259,8 @@ class Summarizer(ModelProcessor):
         hidden: int = -2,
         reduce_option: str = 'mean',
         sentence_handler: SentenceHandler = SentenceHandler(),
-        random_state: int = 12345
+        random_state: int = 12345,
+        use_original: bool = False
     ):
         """
         This is the main Bert Summarizer class.
@@ -246,10 +273,11 @@ class Summarizer(ModelProcessor):
         :param greedyness: associated with the neuralcoref library. Determines how greedy coref should be.
         :param language: Which language to use for training.
         :param random_state: The random state to reproduce summarizations.
+        :param use_original: Wether or not to use the original clustering approach
         """
 
         super(Summarizer, self).__init__(
-            model, custom_model, custom_tokenizer, hidden, reduce_option, sentence_handler, random_state
+            model, custom_model, custom_tokenizer, hidden, reduce_option, sentence_handler, random_state, use_original
         )
 
 
