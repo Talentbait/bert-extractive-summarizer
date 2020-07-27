@@ -165,23 +165,25 @@ class ModelProcessor(object):
         use_first: bool = True,
         algorithm: str ='kmeans',
         clusters: int = 2,
-        use_original: bool = False
+        use_original: bool = False,
+        input_sentences = []
     ) -> str:
         """
         Preprocesses the sentences, runs the clusters to find the centroids, then combines the sentences.
 
         :param body: The raw string body to process
         :param nr_sentences: Sentences to output at summary
-        :param min_length: Minimum length of sentence candidates to utilize for the summary.
+        :param min_length: Minimum length of sentence candidates to utilize for the summary
         :param max_length: Maximum length of sentence candidates to utilize for the summary
         :param use_first: Whether or not to use the first sentence
         :param algorithm: Which clustering algorithm to use. (kmeans, gmm)
         :param clusters: Clusters to use from base examples
         :param use_original: Wether or not to use the original clustering approach
+        :param input_sentences: The content of the jobposting already splitted
         :return: A summary sentence
         """
 
-        sentences = self.sentence_handler(body, min_length, max_length)
+        sentences = input_sentences if input_sentences else self.sentence_handler(body, min_length, max_length)
 
         if sentences:
             sentences = self.__run_clusters(sentences, nr_sentences, algorithm, use_first, clusters, use_original)
@@ -229,7 +231,8 @@ class ModelProcessor(object):
         use_first: bool = True,
         algorithm: str = 'kmeans',
         clusters: int = 2,
-        use_original: bool = False
+        use_original: bool = False,
+        input_sentences = []
     ) -> str:
         """
         (utility that wraps around the run function)
@@ -244,10 +247,11 @@ class ModelProcessor(object):
         :param algorithm: Which clustering algorithm to use. (kmeans, gmm)
         :param clusters: Clusters to use from base examples
         :param use_original: Wether or not to use the original clustering approach
+        :param input_sentences: The content of the jobposting already splitted
         :return: A summary sentence
         """
 
-        return self.run(body, nr_sentences, min_length, max_length, algorithm=algorithm, use_first=use_first, clusters=clusters,use_original=use_original)
+        return self.run(body, nr_sentences, min_length, max_length, algorithm=algorithm, use_first=use_first, clusters=clusters,use_original=use_original,input_sentences=input_sentences)
 
 
 

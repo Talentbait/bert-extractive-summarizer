@@ -26,7 +26,7 @@ class PythonPredictor:
 
         self.model = model
 
-    def predict(self,body,use_first=True,max_length=500,nr_sentences=4, min_length=25,algorithm='kmeans',clusters=2,use_original=False):
+    def predict(self,body,use_first=True,max_length=500,nr_sentences=4, min_length=25,algorithm='kmeans',clusters=2,use_original=False,input_sentences=[]):
 
-        output = self.model(body, nr_sentences=nr_sentences, min_length=min_length, max_length=max_length, use_first=use_first, algorithm=algorithm, clusters=clusters, use_original=use_original)
+        output = self.model(body, nr_sentences=nr_sentences, min_length=min_length, max_length=max_length, use_first=use_first, algorithm=algorithm, clusters=clusters, use_original=use_original, input_sentences=input_sentences)
         return output
