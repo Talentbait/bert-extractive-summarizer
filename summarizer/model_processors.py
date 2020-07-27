@@ -183,7 +183,7 @@ class ModelProcessor(object):
         :return: A summary sentence
         """
 
-        sentences = [a for a in input_sentences if min_length < len(a) < max_length] if input_sentences else self.sentence_handler(body, min_length, max_length)
+        sentences = [a for a in input_sentences if min_length <= len(a) <= max_length] if input_sentences else self.sentence_handler(body, min_length, max_length)
 
         if sentences:
             sentences = self.__run_clusters(sentences, nr_sentences, algorithm, use_first, clusters, use_original)
