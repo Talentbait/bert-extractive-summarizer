@@ -97,7 +97,7 @@ class ModelProcessor(object):
 
         print("Using modified summarazier clustering")
         hidden_examples = self.model(self.base_examples, self.hidden, self.reduce_option)
-        hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(nr_sentences + 1,clusters)
+        hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(nr_sentences,clusters)
 
         sentences = []
         ordered_ids = []
