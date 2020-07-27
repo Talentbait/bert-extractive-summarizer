@@ -251,7 +251,7 @@ class ModelProcessor(object):
         :return: A summary sentence
         """
 
-        return self.run(body, nr_sentences, min_length, max_length, algorithm=algorithm, use_first=use_first, clusters=clusters,use_original=use_original,input_sentences=input_sentences=)
+        return self.run(body, nr_sentences, min_length, max_length, algorithm=algorithm, use_first=use_first, clusters=clusters,use_original=use_original,input_sentences=input_sentences)
 
 
 
