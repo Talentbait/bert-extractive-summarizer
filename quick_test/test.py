@@ -7,6 +7,7 @@ import spacy
 import re
 from summarizer.sentence_handler import SentenceHandler
 from typing import List
+from summa.summarizer import summarize
 
 def preprocess_jobposting(contnent: str) -> str:
     """
@@ -21,9 +22,9 @@ def preprocess_jobposting(contnent: str) -> str:
     contnent = re.sub(r"\s\n\s+","\n",contnent)
     contnent = re.sub(r"als(\.\.\.)*\s+","als ",contnent)
     contnent = re.sub(r"\.*\s*\n+",".\n\n",contnent)
-    for punctuation in [r"\.",r":",r"\?",r"!"]:
+    for punctuation in ".:?!":
         contnent = contnent.replace(punctuation + ".", punctuation)
-        
+
     return contnent
 
 # Load the jobpostings to show as default examples for testing
@@ -90,10 +91,14 @@ somajo_sentences = sen_handler(jobposting, min_length=0, max_length=10000)
 st.sidebar.subheader("Settings")
 
 algorithm = st.sidebar.selectbox("Choose algroithm",['kmeans','gmm'],0)
-use_coreference = st.sidebar.checkbox("Use Coreference handler",False)
 use_first = st.sidebar.checkbox("Use first sentence",True)
+
+st.sidebar.markdown("<sub>Original version performed clustering on the whole input. The modified version perfroms the clustering on the teaser example sentences.</sub>",unsafe_allow_html=True)
 use_original = st.sidebar.checkbox("Original summarizer algorithm", False)
-greedy = st.sidebar.slider("Greediness",0.0,1.0,0.45,0.05)
+
+st.sidebar.markdown("<sub>Coreference join sentences that talk about the same person or thing. (Ideally)</sub>",unsafe_allow_html=True)
+use_coreference = st.sidebar.checkbox("Use Coreference handler",False)
+greedy = st.sidebar.slider("Greediness",0.0,1.0,0.45,0.05) if use_coreference else 0.45
 min_length = st.sidebar.slider("Sentence min length",0,100,30,5)
 max_length = st.sidebar.slider("Sentence max length",20,500,500,10)
 ratio = st.sidebar.slider("Select a ratio (optional)",0.05,1.0,0.15,0.05)
@@ -110,6 +115,7 @@ clusters = st.sidebar.slider("Clusters to use",1,6,2,1)
 st.subheader("Output")
 predictor = init_query_predict(greedy,use_coreference)
 output = predictor.predict(body=jobposting, use_first=use_first, max_length=max_length, nr_sentences=nr_sentences, min_length=min_length, algorithm=algorithm, clusters=clusters, use_original=use_original)
+output = [a.capitalize() for a in output]
 st.write(output)
 
 st.write(" ".join(output))
@@ -124,18 +130,29 @@ if st.checkbox("Show the output for dofferent configurations"):
     coref_disabled = get_fixed_coref(greediness=greedy,use_coreference=False)
 
     # Display output
-    fixed_output.append(" ".join(coref_enabled.predict(jobposting,use_first=True,max_length=max_length, nr_sentences=nr_sentences, min_length=min_length, algorithm=algorithm, clusters=clusters, use_original=use_original)))
-    st.text_area("Coreference ✅  First sentence ✅", fixed_output[0],height=180)
+    fixed_output = coref_enabled.predict(jobposting,use_first=True,max_length=max_length, nr_sentences=nr_sentences, min_length=min_length, algorithm=algorithm, clusters=clusters, use_original=use_original)
+    fixed_output = " ".join([a.capitalize() for a in fixed_output])
+    st.text_area("Coreference ✅  First sentence ✅", fixed_output, height=180) 
 
-    fixed_output.append(" ".join(coref_enabled.predict(jobposting,use_first=False,max_length=max_length, nr_sentences=nr_sentences, min_length=min_length, algorithm=algorithm, clusters=clusters, use_original=use_original)))
-    st.text_area("Coreference ✅  First sentence 🚫", fixed_output[1],height=180)
+    fixed_output = coref_enabled.predict(jobposting,use_first=False,max_length=max_length, nr_sentences=nr_sentences, min_length=min_length, algorithm=algorithm, clusters=clusters, use_original=use_original)
+    fixed_output = " ".join([a.capitalize() for a in fixed_output])
+    st.text_area("Coreference ✅  First sentence 🚫", fixed_output, height=180)
 
-    fixed_output.append(" ".join(coref_disabled.predict(jobposting,use_first=True,max_length=max_length, nr_sentences=nr_sentences, min_length=min_length, algorithm=algorithm, clusters=clusters, use_original=use_original)))
-    st.text_area("Coreference 🚫  First sentence ✅", fixed_output[2],height=180)
+    fixed_output = coref_enabled.predict(jobposting,use_first=True,max_length=max_length, nr_sentences=nr_sentences*2, min_length=min_length, algorithm=algorithm, clusters=clusters, use_original=use_original)
+    fixed_output = " ".join([a.capitalize() for a in fixed_output])
+    st.text_area("Coreference ✅  First sentence ✅  More setences ➕", fixed_output, height=180)
 
-    fixed_output.append(" ".join(coref_disabled.predict(jobposting,use_first=False,max_length=max_length, nr_sentences=nr_sentences, min_length=min_length, algorithm=algorithm, clusters=clusters, use_original=use_original)))
-    st.text_area("Coreference 🚫  First sentence 🚫", fixed_output[3],height=180)
+    fixed_output = coref_disabled.predict(jobposting,use_first=True,max_length=max_length, nr_sentences=nr_sentences, min_length=min_length, algorithm=algorithm, clusters=clusters, use_original=use_original)
+    fixed_output = " ".join([a.capitalize() for a in fixed_output])
+    st.text_area("Coreference 🚫  First sentence ✅", fixed_output, height=180)
 
+    fixed_output = coref_disabled.predict(jobposting,use_first=False,max_length=max_length, nr_sentences=nr_sentences, min_length=min_length, algorithm=algorithm, clusters=clusters, use_original=use_original)
+    fixed_output = " ".join([a.capitalize() for a in fixed_output])
+    st.text_area("Coreference 🚫  First sentence 🚫", fixed_output, height=180)
+
+    fixed_output = coref_disabled.predict(jobposting,use_first=True,max_length=max_length, nr_sentences=nr_sentences*2, min_length=min_length, algorithm=algorithm, clusters=clusters, use_original=use_original)
+    fixed_output = " ".join([a.capitalize() for a in fixed_output])
+    st.text_area("Coreference 🚫  First sentence ✅  More setences ➕", fixed_output, height=180)
 
 ###########################  Tokenizer comparisson  ############################
 st.subheader("Tokenizer comparisson")
@@ -162,10 +179,10 @@ def filter_sentences_by_length(sentences: List[str], max_length: int = 500, min_
     not_used = [a['sentence'] for a in sentence_described if not a['used']]
 
 
-    if st.checkbox("Show used for " + sentence_handler):
+    if st.checkbox("Show sentences used with the " + sentence_handler + " sentence segmentator."):
         st.json(used)
 
-    if st.checkbox("Show not used for " + sentence_handler):
+    if st.checkbox("Show sentences not used with the " + sentence_handler + " sentence segmentator."):
         st.json(not_used)
 
     return used, not_used
@@ -182,5 +199,4 @@ spacy_used, spacy_not_used = filter_sentences_by_length(spacy_sentences,max_leng
 #############################   Other approaches   #############################
 st.header("Another summarizer")
 
-from summa.summarizer import summarize
 st.write(summarize(jobposting, language='german',ratio=0.20))

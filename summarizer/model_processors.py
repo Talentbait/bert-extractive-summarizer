@@ -110,10 +110,12 @@ class ModelProcessor(object):
 
         print("ORdered IDs:\t", ordered_ids)
 
-        if not use_first:
-            ordered_ids.pop(0)
-            print("Pop:\t", ordered_ids)
+        if use_first and 0 not in ordered_ids:
+            ordered_ids = [0] + ordered_ids
         
+        if not use_first and 0 in ordered_ids:
+            ordered_ids = [a for a in ordered_ids if a]
+
         if ordered_ids:
             sentences = [content[j] for j in ordered_ids]
         
