@@ -97,7 +97,7 @@ class ModelProcessor(object):
 
         print("Using modified summarazier clustering")
         hidden_examples = self.model(self.base_examples, self.hidden, self.reduce_option)
-        hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(nr_sentences,clusters)
+        hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(nr_sentences + 1,clusters)
 
         sentences = []
         ordered_ids = []
@@ -183,7 +183,7 @@ class ModelProcessor(object):
         :return: A summary sentence
         """
 
-        sentences = input_sentences if input_sentences else self.sentence_handler(body, min_length, max_length)
+        sentences = [a for a in input_sentences if min_length < len(a) < max_length] if input_sentences else self.sentence_handler(body, min_length, max_length)
 
         if sentences:
             sentences = self.__run_clusters(sentences, nr_sentences, algorithm, use_first, clusters, use_original)
@@ -251,7 +251,7 @@ class ModelProcessor(object):
         :return: A summary sentence
         """
 
-        return self.run(body, nr_sentences, min_length, max_length, algorithm=algorithm, use_first=use_first, clusters=clusters,use_original=use_original,input_sentences=input_sentences)
+        return self.run(body, nr_sentences, min_length, max_length, algorithm=algorithm, use_first=use_first, clusters=clusters,use_original=use_original,input_sentences=input_sentences=)
 
 
 
