@@ -97,7 +97,7 @@ class ModelProcessor(object):
 
         print("Using modified summarazier clustering")
         hidden_examples = self.model(self.base_examples, self.hidden, self.reduce_option)
-        hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(nr_sentences + 1,clusters)
+        hidden_args = ClusterFeatures(hidden,hidden_examples, algorithm, random_state=self.random_state).cluster(nr_sentences,clusters)
 
         sentences = []
         ordered_ids = []
@@ -113,8 +113,8 @@ class ModelProcessor(object):
         if use_first and 0 not in ordered_ids:
             ordered_ids = [0] + ordered_ids
         
-        if not use_first and 0 in ordered_ids:
-            ordered_ids = [a for a in ordered_ids if a]
+        # if not use_first and 0 in ordered_ids:
+        #     ordered_ids = [a for a in ordered_ids if a]
 
         if ordered_ids:
             sentences = [content[j] for j in ordered_ids]
