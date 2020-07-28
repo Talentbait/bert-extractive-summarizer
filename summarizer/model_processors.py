@@ -185,6 +185,8 @@ class ModelProcessor(object):
 
         sentences = [a for a in input_sentences if min_length <= len(a) <= max_length] if input_sentences else self.sentence_handler(body, min_length, max_length)
 
+        self.config_params['sentences'] = sentences
+
         if sentences:
             sentences = self.__run_clusters(sentences, nr_sentences, algorithm, use_first, clusters, use_original)
 
@@ -222,6 +224,12 @@ class ModelProcessor(object):
 
         return None
 
+    def get_summarizer_configuration(self):
+        
+        config_params = self.config_params
+        
+        return config_params
+
     def __call__(
         self,
         body: str,
@@ -250,6 +258,18 @@ class ModelProcessor(object):
         :param input_sentences: The content of the jobposting already splitted
         :return: A summary sentence
         """
+        
+        self.config_params = {
+            "nr_sentences": nr_sentences,
+            "min_length": min_length,
+            "max_length": max_length,
+            "algorithm": algorithm,
+            "use_first": use_first,
+            "clusters": clusters,
+            "use_original": use_original,
+            "input_sentences": input_sentences
+        }
+
 
         return self.run(body, nr_sentences, min_length, max_length, algorithm=algorithm, use_first=use_first, clusters=clusters,use_original=use_original,input_sentences=input_sentences)
 
